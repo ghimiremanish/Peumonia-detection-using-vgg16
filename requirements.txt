@@ -3,3 +3,4 @@ keras
 pillow
 werkzeug
 numpy
+tensorflow
