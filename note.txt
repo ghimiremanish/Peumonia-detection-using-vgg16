@@ -1,0 +1,4 @@
+http://localhost:56733
+sudo docker stop docker.test && sudo docker start docker.test
+
+docker stop docker.test && docker start docker.test
