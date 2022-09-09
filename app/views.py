@@ -16,10 +16,14 @@ model = load_model(MODEL_PATH)
 def model_predict(img_path, model):
    print("Predict model enterd==========>")
    img = load_img(img_path, target_size=(64, 64)) #target_size must agree with what the trained model expects!!
+   print("loaded img==========>")
    # Preprocessing the image
-   imgArr = img_to_array(img)
-   imgNp = np.expand_dims(imgArr, axis=0)
-   preds = model.predict(imgNp)
+   img = img_to_array(img)
+   print("Image to Array==========>")
+   img = np.expand_dims(img, axis=0)
+   print("NP==========>")
+   preds = model.predict(img)
+   print("Predict==========>")
    return preds
 
 @app.route('/')
