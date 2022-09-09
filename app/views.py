@@ -1,12 +1,12 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, flash
 from app import app
 import os
 import numpy as np
 import datetime
 from keras.models import load_model
-from keras.preprocessing import image
 from PIL import Image
 from werkzeug.utils import secure_filename
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 MODEL_PATH = 'app/models/model.h5'
 
@@ -14,11 +14,12 @@ MODEL_PATH = 'app/models/model.h5'
 model = load_model(MODEL_PATH)
 
 def model_predict(img_path, model):
-   img = image.load_img(img_path, target_size=(64, 64)) #target_size must agree with what the trained model expects!!
+   print("Predict model enterd==========>")
+   img = load_img(img_path, target_size=(64, 64)) #target_size must agree with what the trained model expects!!
    # Preprocessing the image
-   img = image.img_to_array(img)
-   img = np.expand_dims(img, axis=0)
-   preds = model.predict(img)
+   imgArr = img_to_array(img)
+   imgNp = np.expand_dims(imgArr, axis=0)
+   preds = model.predict(imgNp)
    return preds
 
 @app.route('/')
@@ -31,28 +32,32 @@ def about():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-   # Get the file from post request
-   f = request.files['image']
-
-   # Save the file to ./uploads
-   basepath = os.path.dirname(__file__)
-   file_path = os.path.join(
-      basepath, 'uploads', secure_filename(str(datetime.datetime.today())+f.filename))
-   f.save(file_path)
-
-   # Make prediction
-   preds = model_predict(file_path, model)
-
-   data = ''
-
-   if preds == 0:
-      data = 'Normal'
+   print("Predict function==========>")
+   # check if the post request has the file part
+   if 'file' not in request.files:
+      return "Please Attache Image File"
    else:
-      data = 'Pneumonia'
+      print("File Found==========>")
+      f = request.files['file']
+      # Save the file to ./uploads
+      basepath = os.path.dirname(__file__)
+      file_path = os.path.join(
+         basepath, 'uploads', secure_filename(str(datetime.datetime.today())+f.filename))
+      f.save(file_path)
+      print("image saved==========>")
+      # Make prediction
+      preds = model_predict(file_path, model)
 
-   tasks = [
-      {
-         'result':data
-      }
-   ]
-   return jsonify(tasks)
+      print("Predict done==========>")
+      data = ''
+      if preds == 0:
+         data = 'Normal'
+      else:
+         data = 'Pneumonia'
+
+      tasks = [
+         {
+            'result':data
+         }
+      ]
+      return jsonify(tasks)
